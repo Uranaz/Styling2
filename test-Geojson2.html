@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset='utf-8'/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>Cycleroutes</title>
+  <meta name='viewport' content='initial-scale=1,maximum-scale=1,user-scalable=no' />
+  <script src='https://api.tiles.mapbox.com/mapbox-gl-js/v0.16.0/mapbox-gl.js'></script>
+  <link href='https://api.tiles.mapbox.com/mapbox-gl-js/v0.16.0/mapbox-gl.css' rel='stylesheet' />
+  <link rel="stylesheet" type="text/css" href="style.css"/>
+  <link rel="stylesheet" href="http://cdn.leafletjs.com/leaflet/v0.7.7/leaflet.css" />
+</head>
+<body>
+  <div id='map'></div>
+  <script src="http://cdn.leafletjs.com/leaflet/v0.7.7/leaflet.js"></script>
+  <script src="orangeRoute.js"></script>
+  <script>
+
+var mapboxAccessToken = 'pk.eyJ1IjoidXJhbmF6IiwiYSI6ImNpaTM1Y29pdjAwMnd2bm0yMjhvN2R5YWQifQ.0lB3sz08vtttzGY6t-cPcw';
+var map = L.map('map').setView([55.744394, 37.606559], 11);
+
+L.tileLayer('https://api.tiles.mapbox.com/v4/{id}/{z}/{x}/{y}.png?access_token=' + mapboxAccessToken, {
+  id: 'mapbox.light',
+  attribution: 'Map data &copy; <a href="http://openstreetmap.org">OpenStreetMap</a> contributors, <a href="http://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>, Imagery © <a href="http://mapbox.com">Mapbox</a>',
+}).addTo(map);
+
+function getColor(t) {
+    return t == 'CInfr' ? '#1999c1' :
+           t == 'Good'  ? '#28b662' :
+           t == 'GSide'  ? '#28b662' :
+           t == 'NRoad'  ? '#ffbb39' :
+           t == 'NSide'   ? '#ffbb39' :
+           t == 'BRoad'   ? '#cd6600' :
+           t == 'BSide'   ? '#cd6600' :
+                      '#FFEDA0';
+};
+
+function getDash(t) {
+  return t == 'CInfr' ? '0' :
+         t == 'Good'  ? '0' :
+         t == 'GSide'  ? '5' :
+         t == 'NRoad'  ? '0' :
+         t == 'NSide'   ? '5' :
+         t == 'BRoad'   ? '0' :
+         t == 'BSide'   ? '5' :
+                    '0';
+}
+
+function style(feature) {
+    return {
+        color: getColor(feature.properties.Type),
+        weight: 3,
+        opacity: 0.7,
+        dashArray: getDash(feature.properties.Type),
+    };
+}
+
+function highlightFeature(e) {
+    var layer = e.target;
+
+    layer.setStyle({
+        weight: 5,
+        color: '#666',
+        dashArray: '',
+        fillOpacity: 0.7
+    });
+
+    if (!L.Browser.ie && !L.Browser.opera) {
+        layer.bringToFront();
+    }
+};
+
+var geojson;
+
+function resetHighlight(e) {
+    geojson.resetStyle(e.target);
+};
+
+function zoomToFeature(e) {
+    map.fitBounds(e.target.getBounds());
+};
+
+function onEachFeature(feature, layer) {
+    layer.on({
+        mouseover: highlightFeature,
+        mouseout: resetHighlight,
+        click: zoomToFeature
+    });
+};
+
+geojson = L.geoJson(orangeRoute, {style: style, onEachFeature: onEachFeature}).addTo(map);
+
+</script>
+
+</body>
+</html>
